@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3b60">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="REPCEN">
+  <title>Generador de mensajes REPCEN</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #eef3f7;
+      --card: #ffffff;
+      --text: #14202b;
+      --muted: #5f6f7c;
+      --line: #d7e0e7;
+      --primary: #0b5b8f;
+      --primary2: #073f65;
+      --soft: #e8f3fa;
+      --danger: #a32828;
+      --success: #176a3a;
+      --shadow: 0 10px 28px rgba(15, 44, 66, .10);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #10161b;
+        --card: #182129;
+        --text: #eef5f9;
+        --muted: #a6b4bf;
+        --line: #34434e;
+        --primary: #4da3d8;
+        --primary2: #77bce5;
+        --soft: #1c3443;
+        --success: #63c889;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: calc(18px + env(safe-area-inset-top)) 18px 18px;
+      background: linear-gradient(135deg, #073f65, #0b6ca5);
+      color: white;
+    }
+    header h1 { margin: 0; font-size: 22px; }
+    header p { margin: 6px 0 0; opacity: .88; font-size: 13px; }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px 12px calc(28px + env(safe-area-inset-bottom));
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 750;
+      margin: 0 0 10px;
+      letter-spacing: .1px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--muted);
+      margin: 0 0 5px;
+    }
+    select, input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 11px 12px;
+      font: inherit;
+      font-size: 16px;
+      outline: none;
+    }
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+    textarea { resize: vertical; min-height: 92px; }
+    #preview {
+      min-height: 270px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .field { margin-bottom: 11px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .inline-pair {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+    .inline-pair .field {
+      min-width: 0;
+    }
+    @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 11px;
+    }
+    button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 13px;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    .primary { background: var(--primary); color: white; }
+    .secondary { background: var(--soft); color: var(--primary2); border: 1px solid var(--line); }
+    .full { grid-column: 1 / -1; }
+    .minirow {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .minirow input { flex: 1; }
+    .smallbtn {
+      white-space: nowrap;
+      min-height: 44px;
+      padding: 9px 11px;
+      background: var(--soft);
+      color: var(--primary2);
+      border: 1px solid var(--line);
+    }
+    .status {
+      min-height: 18px;
+      margin-top: 9px;
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--success);
+      text-align: center;
+    }
+    .help {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 8px 0 0;
+    }
+    details {
+      border-top: 1px solid var(--line);
+      margin-top: 12px;
+      padding-top: 10px;
+    }
+    summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: rgba(255,255,255,.16);
+      margin-top: 9px;
+    }
+    .checklist-intro {
+      margin: 2px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .check-item {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      margin-bottom: 9px;
+      overflow: hidden;
+      background: var(--card);
+    }
+    .check-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .check-head input[type="checkbox"] {
+      width: 21px;
+      height: 21px;
+      margin: 0;
+      flex: 0 0 auto;
+      accent-color: var(--primary);
+    }
+    .check-fields {
+      display: none;
+      padding: 0 12px 2px 43px;
+      border-top: 1px solid var(--line);
+    }
+    .check-item.selected .check-fields { display: block; }
+    .check-item.selected .check-head { background: var(--soft); }
+    .compound-unit { margin-bottom: 13px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Generador de mensajes REPCEN</h1>
+  <p>C.T. Pdte. Plutarco Elías Calles</p>
+  <span class="badge">Los datos permanecen en este dispositivo</span>
+</header>
+
+<main>
+  <section class="card">
+    <div class="field">
+      <label for="category">Categoría</label>
+      <select id="category"></select>
+    </div>
+    <div class="field" id="arranqueModeWrap" hidden>
+      <label for="arranqueMode">Formato del mensaje</label>
+      <select id="arranqueMode">
+        <option value="simple">Mensaje Simple</option>
+        <option value="compound">Mensaje Compuesto</option>
+      </select>
+    </div>
+    <div class="field" id="templateWrap" style="margin-bottom:0">
+      <label for="template" id="templateLabel">Tipo de mensaje</label>
+      <select id="template"></select>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Datos del evento</h2>
+    <div id="fields"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Mensaje listo para WhatsApp</h2>
+    <textarea id="preview" spellcheck="true"></textarea>
+    <div class="actions">
+      <button class="primary" id="copyBtn">📋 Copiar</button>
+      <button class="secondary" id="shareBtn">↗️ Compartir</button>
+      <button class="secondary full" id="whatsappBtn">🟢 Abrir en WhatsApp</button>
+    </div>
+    <div id="status" class="status"></div>
+    <p class="help">Puedes corregir manualmente la vista previa antes de copiarla o compartirla. Los asteriscos conservan las negritas al pegar en WhatsApp.</p>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Preferencias rápidas</h2>
+    <div class="grid">
+      <div class="field">
+        <label for="defaultUnit">Unidad predeterminada</label>
+        <select id="defaultUnit">
+          <option value="1">Unidad 1</option>
+          <option value="2">Unidad 2</option>
+          <option value="3">Unidad 3</option>
+          <option value="4">Unidad 4</option>
+          <option value="5">Unidad 5</option>
+          <option value="6">Unidad 6</option>
+          <option value="7">Unidad 7</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="defaultInitials">Iniciales / referencia opcional</label>
+        <input id="defaultInitials" placeholder="Ej. Turno B">
+      </div>
+    </div>
+    <button class="secondary" id="savePrefs">Guardar preferencias</button>
+    <details>
+      <summary>Uso como acceso directo en iPhone</summary>
+      <p class="help">Abre esta herramienta en Safari. Después toca Compartir → Añadir a pantalla de inicio. Así aparecerá como un icono llamado “REPCEN”.</p>
+    </details>
+  </section>
+</main>
+
+<script>
+const C = {
+  MOV: "1. Movimientos de Generación",
+  LIC: "2. Prórrogas",
+  DISPARO: "3. Disparos",
+  ARRANQUE: "4. Arranque Frío",
+  ARRANQUE_CALIENTE: "5. Arranque Caliente",
+  PARO: "6. Paro de Unidad y Decrementos",
+  SUB: "7. Maniobras en la Subestación 400 KV"
+};
+
+const CATEGORY_ORDER = [
+  C.MOV,
+  C.LIC,
+  C.DISPARO,
+  C.ARRANQUE,
+  C.ARRANQUE_CALIENTE,
+  C.PARO,
+  C.SUB
+];
+
+const unitField = { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"], defaultFromPrefs:true };
+const timeField = (key="time", label="Hora") => ({ key, label, type:"time", now:true });
+const mwField = (key="mw", label="Generación (MW)") => ({ key, label, type:"number", placeholder:"Ej. 320" });
+const licenseField = (key="license", label="Número de licencia") => ({ key, label, type:"text", placeholder:"Ej. 20260702-1234" });
+const dateField = (key="date", label="Fecha de vigencia") => ({ key, label, type:"date" });
+
+
+const SUBSTATION_EQUIPMENT_GROUPS = [
+  {
+    scope:"common",
+    scopeLabel:"Comunes a Unidades 3 y 4",
+    header:"Unidades 3 y 4",
+    sections:[
+      {
+        label:"Interruptores",
+        type:"interruptor",
+        options:[
+          {code:"A2080"},
+          {code:"A0080"},
+          {code:"A8340", description:"Interruptor de enlace entre Unidad 3 y Unidad 4."}
+        ]
+      },
+      {
+        label:"Cuchillas seccionadoras",
+        type:"cuchilla",
+        options:[
+          {code:"A2081"},
+          {code:"A2083"},
+          {code:"A0083"},
+          {code:"A0082"},
+          {code:"A2089", description:"Cuchilla del transformador de arranque T8."},
+          {code:"A8341"},
+          {code:"A8342"}
+        ]
+      },
+      {
+        label:"Cuchillas de tierra",
+        type:"cuchilla",
+        options:[
+          {code:"AC077"},
+          {code:"AC087"},
+          {code:"AC097"},
+          {code:"AC107"},
+          {code:"AC117"},
+          {code:"AC127"},
+          {code:"AC137"},
+          {code:"AC147"}
+        ]
+      }
+    ]
+  },
+  {
+    scope:"u3",
+    scopeLabel:"Unidad 3",
+    header:"Unidad 3",
+    sections:[
+      {
+        label:"Interruptor",
+        type:"interruptor",
+        options:[{code:"A1030"}]
+      },
+      {
+        label:"Cuchillas seccionadoras",
+        type:"cuchilla",
+        options:[
+          {code:"A1039", description:"Cuchilla de máquina."},
+          {code:"A1031"},
+          {code:"A1033"},
+          {code:"A1036"}
+        ]
+      },
+      {
+        label:"Cuchillas de tierra",
+        type:"cuchilla",
+        options:[
+          {code:"AC017"},
+          {code:"AC027"},
+          {code:"AC037"},
+          {code:"AC047"},
+          {code:"AC057"},
+          {code:"AC067"}
+        ]
+      }
+    ]
+  },
+  {
+    scope:"u4",
+    scopeLabel:"Unidad 4",
+    header:"Unidad 4",
+    sections:[
+      {
+        label:"Interruptor",
+        type:"interruptor",
+        options:[{code:"A1040"}]
+      },
+      {
+        label:"Cuchillas seccionadoras",
+        type:"cuchilla",
+        options:[
+          {code:"A1049", description:"Cuchilla de máquina."},
+          {code:"A1042"},
+          {code:"A1043"},
+          {code:"A1046"}
+        ]
+      },
+      {
+        label:"Cuchillas de tierra",
+        type:"cuchilla",
+        options:[
+          {code:"AC157"},
+          {code:"AC167"},
+          {code:"AC177"},
+          {code:"AC187"},
+          {code:"AC197"},
+          {code:"AC207"}
+        ]
+      }
+    ]
+  }
+];
+
+const SUBSTATION_EQUIPMENT_LIST = SUBSTATION_EQUIPMENT_GROUPS.flatMap(group =>
+  group.sections.flatMap(section =>
+    section.options.map(option => ({
+      value:`${group.scope}|${section.type}|${option.code}`,
+      scope:group.scope,
+      header:group.header,
+      scopeLabel:group.scopeLabel,
+      section:section.label,
+      type:section.type,
+      code:option.code,
+      description:option.description || ""
+    }))
+  )
+);
+
+const SUBSTATION_SELECT_GROUPS = SUBSTATION_EQUIPMENT_GROUPS.map(group => ({
+  label:group.scopeLabel,
+  options:group.sections.flatMap(section => {
+    const equipmentType =
+      section.label.toLowerCase().includes("tierra")
+        ? "Cuchilla de tierra"
+        : section.type === "interruptor"
+          ? "Interruptor"
+          : "Cuchilla seccionadora";
+
+    return section.options.map(option => ({
+      value:`${group.scope}|${section.type}|${option.code}`,
+      label:option.description
+        ? `${equipmentType} — ${option.code} — ${option.description}`
+        : `${equipmentType} — ${option.code}`
+    }));
+  })
+}));
+
+function getSubstationEquipment(value) {
+  return SUBSTATION_EQUIPMENT_LIST.find(item => item.value === value) || {
+    scope:"common",
+    header:"Unidades 3 y 4",
+    type:"interruptor",
+    code:""
+  };
+}
+
+function substationActionWord(action, type) {
+  if (type === "cuchilla") {
+    return action === "close" ? "cerrada" : "abierta";
+  }
+  return action === "close" ? "cerrado" : "abierto";
+}
+
+function buildSubstationActionLine(time, action, equipmentValue) {
+  const equipment = getSubstationEquipment(equipmentValue);
+  const state = substationActionWord(action, equipment.type);
+  return `${time} h
+Queda ${state} ${equipment.type} ${equipment.code}. Enterada la G.C.R.CE.`;
+}
+
+function substationSharedHeader(scopes) {
+  const unique = [...new Set(scopes)];
+  if (unique.length === 1 && unique[0] === "u3") return "Unidad 3";
+  if (unique.length === 1 && unique[0] === "u4") return "Unidad 4";
+  return "Unidades 3 y 4";
+}
+
+
+const templates = [
+  {
+    id:"arr_disponible_mtr", category:C.ARRANQUE, name:"1. Unidad disponible por despacho de MTR",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Se declara Unidad disponible ante la G.C.R.CE. solicitando iniciar maniobras de arranque de Unidad por despacho de MTR.`
+  },
+  {
+    id:"arr_bec", category:C.ARRANQUE, name:"2. Bomba de Extracción de Condensado en recirculación",
+    fields:[unitField,timeField("time","Hora del evento"),{key:"equipment",label:"Bomba de Extracción de Condensado",type:"text",placeholder:"Ej. 3A o 3B"}],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+En servicio Bomba de Extracción de Condensado ${v.equipment}, en recirculación para acondicionamiento de parámetros químicos.`
+  },
+  {
+    id:"arr_quimica", category:C.ARRANQUE, name:"3. Parámetros químicos adecuados para llenado",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Departamento químico reporta parámetros adecuados para iniciar el llenado de Caldera.`
+  },
+  {
+    id:"arr_baa", category:C.ARRANQUE, name:"4. BAA inicia llenado de Caldera",
+    fields:[unitField,timeField("time","Hora del evento"),{key:"equipment",label:"Bomba de Agua de Alimentación (BAA)",type:"text",placeholder:"Ej. 3A, 3B o 3C"}],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+En servicio BAA ${v.equipment} Iniciando llenado de Caldera.`
+  },
+  {
+    id:"arr_sistema_condensado", category:C.ARRANQUE, name:"5. Sistema de Condensado en servicio",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+En servicio Sistema de Condensado.`
+  },
+  {
+    id:"arr_aire_gases", category:C.ARRANQUE, name:"6. Sistema Aire Gases en servicio",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+En servicio Sistema Aire Gases.`
+  },
+  {
+    id:"arr_disponible_general", category:C.ARRANQUE, name:"7. Unidad disponible para iniciar maniobras de arranque",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Se declara la Unidad disponible ante la G.C.R.CE. solicitando iniciar maniobras de arranque.`
+  },
+  {
+    id:"arr_restablecimiento", category:C.ARRANQUE, name:"8. Inicio de maniobras de restablecimiento",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Inicia Maniobras de Restablecimiento de Unidad.`
+  },
+  {
+    id:"arr_purga", category:C.ARRANQUE, name:"9. Purga del Hogar realizada",
+    fields:[unitField,{key:"start",label:"Hora inicial",type:"time",now:true,rowGroup:"purgeTime"},{key:"end",label:"Hora final",type:"time",now:true,rowGroup:"purgeTime"}],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.start} h - ${v.end} h
+Queda Realizada Purga del Hogar.`
+  },
+  {
+    id:"arr_encendido_gv", category:C.ARRANQUE, name:"10. Encendido Generador de Vapor",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Encendido Generador de Vapor.`
+  },
+  {
+    id:"arr_vacio", category:C.ARRANQUE, name:"11. Inicio de levantamiento de vacío",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Inicia Levantamiento de Vacío en el Condensador Principal.`
+  },
+  {
+    id:"arr_acondicionamiento", category:C.ARRANQUE, name:"12. Concluye acondicionamiento de Vapor Principal",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Concluye la Etapa de Acondicionamiento de Presión y Temperatura de Vapor Principal.`
+  },
+  {
+    id:"arr_turbina", category:C.ARRANQUE, name:"13. Turbina Restablecida",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Turbina Restablecida.`
+  },
+  {
+    id:"arr_rodado_2350", category:C.ARRANQUE, name:"14. Inicio de rodado de 3 a 2350 RPM",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Inicia Rodado de Turbogrupo de 3 a 2350 RPM.`
+  },
+  {
+    id:"arr_rodado_calentamiento", category:C.ARRANQUE, name:"15. Rodado a 2350 rpm para calentamiento uniforme",
+    fields:[unitField,timeField("time","Hora del evento"),{key:"temp",label:"Temperatura actual de vapor recalentado caliente (°C)",type:"number",placeholder:"Ej. 245"}],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Rodado de Turbogrupo de 3 a 2350 rpm, para calentamiento uniforme de rotor de Turbina de Presión Intermedia hasta alcanzar 260°C en línea de vapor de recalentado caliente, de acuerdo a monograma del fabricante.
+Actualmente se tienen ${v.temp} °C en línea de vapor recalentado caliente, una vez cumplida la condición de 260 °C Inicia el conteo de 180 minutos para calentamiento uniforme del rotor.`
+  },
+  {
+    id:"arr_260", category:C.ARRANQUE, name:"16. Cumplida condición de 260 °C",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Cumplida la condición de 260 °C en línea de vapor recalentado caliente, Inicia conteo de 180 minutos para calentamiento uniforme del rotor en turbina de presión Intermedia.`
+  },
+  {
+    id:"arr_3600", category:C.ARRANQUE, name:"17. Rodado de 2350 a 3600 rpm",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Rodado de turbogrupo de 2350 a 3600 rpm.
+En proceso pruebas de disparos simulados y automatismo de bombas, previo a maniobras de Sincronización de Unidad.`
+  },
+  {
+    id:"arr_transferencia", category:C.ARRANQUE, name:"18. Transferencia de válvulas VPP a VG",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Realizada la Transferencia de Válvulas de Turbina de VPP a VG.`
+  },
+  {
+    id:"arr_sincroniza", category:C.ARRANQUE, name:"19. Unidad sincronizada",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      {key:"closeMw",label:"MW al cierre del interruptor",type:"number",placeholder:"Ej. 5",rowGroup:"syncMw"},
+      {key:"minMw",label:"MW a ajustar",type:"number",placeholder:"Ej. 35",rowGroup:"syncMw"},
+      {key:"breaker",label:"Interruptor de Máquina cerrado",type:"text",placeholder:"Ej. A1030 o A1040"}
+    ],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Unidad sincronizada con ${v.closeMw} MW al cierre del interruptor de máquina ${v.breaker}, ajusta generación a ${v.minMw} MW carga mínima por 10 minutos por APS. Enterada la G.C.R.CE.`
+  },
+  {
+    id:"arr_a8340", category:C.ARRANQUE, name:"20. Normalización de Bahía con A8340",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Cerrado interruptor medio A8340, queda normalizada Bahía de 400 KV, para confiabilidad operativa de Generación en Unidades 3 y 4. Enterada la G.C.R.CE.`
+  },
+  {
+    id:"arr_aux", category:C.ARRANQUE, name:"21. Cambio de Auxiliares Eléctricos",
+    fields:[unitField,timeField("time","Hora del evento"),{key:"mw",label:"MW al realizar el cambio de auxiliares",type:"number",placeholder:"Ej. 80"}],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Con Unidad generando ${v.mw} MW Queda Realizado el Cambio de Auxiliares Eléctricos.`
+  },
+  {
+    id:"arr_175", category:C.ARRANQUE, name:"22. Unidad a 175 MW para control químico",
+    fields:[unitField,timeField("time","Hora del evento")],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Unidad generando 175 MW para control de parámetros químicos, enterada la G.C.R.CE.`
+  },
+
+  {
+    id:"arr_disponible_incremento", category:C.ARRANQUE, name:"23. Unidad disponible para incremento de generación",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      {key:"requestedMw",label:"Carga solicitada (MW)",type:"number",placeholder:"Ej. 175"}
+    ],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Se declara la Unidad disponible para incremento de generación ante la G.C.R.CE, solicitando mantener carga a ${v.requestedMw} MW.`
+  },
+
+  {
+    id:"arr_incrementar_carga", category:C.ARRANQUE, name:"24. Unidad disponible para incrementar carga",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      {key:"currentMw",label:"Carga actual (MW)",type:"number",placeholder:"Ej. 175",rowGroup:"incrementLoad"},
+      {key:"requestedMw",label:"Carga solicitada (MW)",type:"number",placeholder:"Ej. 300",rowGroup:"incrementLoad"}
+    ],
+    build:v=>`*C.T. Pdte. Plutarco Elías Calles*
+
+*⚙️ Unidad ${v.unit}*
+
+${v.time} h
+Se declara la Unidad disponible para incremento de generación ante la G.C.R.CE, solicitando incrementar carga de ${v.currentMw} a ${v.requestedMw} MW.`
+  },
+
+  {
+    id:"mov_sube", category:C.MOV, name:"Incremento de Generación",
+    fields:[
+      unitField,
+      timeField("start","Hora Inicial"),
+      timeField("end","Hora Final"),
+      mwField("from","MW Antes"),
+      mwField("to","MW Después")
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*\n\n*⬆️ Unidad ${v.unit}*\n\n*${v.start} h a ${v.end} h*\n\nIncremento de generación de ${v.from} a ${v.to} MW, a solicitud de la G.C.R.CE.`
+  },
+  {
+    id:"mov_baja", category:C.MOV, name:"Descenso de Generación",
+    fields:[
+      unitField,
+      timeField("start","Hora Inicial"),
+      timeField("end","Hora Final"),
+      mwField("from","MW Antes"),
+      mwField("to","MW Después")
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*\n\n*⬇️ Unidad ${v.unit}*\n\n*${v.start} h a ${v.end} h*\n\nDescenso de generación de ${v.from} a ${v.to} MW, a solicitud de la G.C.R.CE.`
+  },
+
+  {
+    id:"lic_otorga", category:C.LIC, name:"Otorga Licencia",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260623", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo por el cual se otorga la licencia" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" },
+      { key:"retiredLicenseFirst", label:"Licencia que se retira — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260615", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"retiredLicenseNumber" },
+      { key:"retiredLicenseLast", label:"Licencia que se retira — últimos 4 dígitos", type:"text", placeholder:"Ej. 1330", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"retiredLicenseNumber" }
+    ],
+    build:v=>`*C.T. Pdte Plutarco Elías Calles*\n\n🪪 *Unidad ${v.unit}*\n\n${v.time} h\nLa G.C.R.CE. Otorga la licencia ${v.licenseFirst}-${v.licenseLast}\n${v.reason}\nVig ${v.date} a las ${v.validTime} h.\n\nQueda retirada la Lic. ${v.retiredLicenseFirst}-${v.retiredLicenseLast}`
+  },
+  {
+    id:"lic_otorga_muerto", category:C.LIC, name:"Otorga Licencia en muerto",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260623", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo por el cual se otorga la licencia en muerto" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" },
+      { key:"retiredLicenseFirst", label:"Licencia que se retira — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260615", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"retiredLicenseNumber" },
+      { key:"retiredLicenseLast", label:"Licencia que se retira — últimos 4 dígitos", type:"text", placeholder:"Ej. 1330", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"retiredLicenseNumber" }
+    ],
+    build:v=>`*C.T. Pdte Plutarco Elías Calles*\n\n🔴 *Unidad ${v.unit}*\n\n${v.time} h\n🪪 La G.C.R.CE. otorga Lic. en muerto ${v.licenseFirst}-${v.licenseLast}\n${v.reason}.\nCon Vigencia al ${v.date}, ${v.validTime} h.\n\nQueda retirada la Lic. ${v.retiredLicenseFirst}-${v.retiredLicenseLast}`
+  },
+  {
+    id:"lic_prorroga_muerto", category:C.LIC, name:"Prórroga de licencia en muerto",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      { key:"cenaceOperator", label:"Nombre del operador de CENACE", type:"text", placeholder:"Ej. Juan Pérez" },
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260620", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo de la prórroga" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*\n\n🪪 *Unidad ${v.unit}*\n\n${v.time} h\nEl Ing. ${v.cenaceOperator} de la G.C.R.CE. prórroga la licencia en muerto ${v.licenseFirst}-${v.licenseLast}\n${v.reason}\nCon vigencia ${v.date} a las ${v.validTime}.`
+  },
+  {
+    id:"lic_prorroga_vivo", category:C.LIC, name:"Prórroga de licencia en vivo",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      { key:"cenaceOperator", label:"Nombre del operador de CENACE", type:"text", placeholder:"Ej. Juan Pérez" },
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260620", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo de la prórroga" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*\n\n🪪 *Unidad ${v.unit}*\n\n${v.time} h\nEl Ing. ${v.cenaceOperator} de la G.C.R.CE. prórroga la licencia en vivo ${v.licenseFirst}-${v.licenseLast}\n${v.reason}\nCon vigencia ${v.date} a las ${v.validTime}.`
+  },
+  {
+    id:"lic_prorroga_retroactiva", category:C.LIC, name:"Prórroga de licencia retroactiva",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("licenseTime","Hora de la Licencia"),
+      { key:"cenaceOperator", label:"Nombre del operador de CENACE", type:"text", placeholder:"Ej. Juan Pérez" },
+      timeField("retroTime","Hora Retroactiva"),
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260626", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo de la licencia retroactiva" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" },
+      { key:"previousLicenseFirst", label:"Licencia anterior — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260619", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"previousLicenseNumber" },
+      { key:"previousLicenseLast", label:"Licencia anterior — últimos 4 dígitos", type:"text", placeholder:"Ej. 2316", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"previousLicenseNumber" }
+    ],
+    build:v=>`*C.T Pdte. Plutarco Elías Calles*\n\n🪪 *Unidad ${v.unit}*\n\n${v.licenseTime} h\nEl Ing. ${v.cenaceOperator} de la G.C.R.CE. prórroga la licencia ${v.licenseFirst}-${v.licenseLast}, con hora retroactiva de las ${v.retroTime} h.\n${v.reason}\nCon vigencia al ${v.date} a las ${v.validTime} h.\n\nQueda retirada la Lic. anterior ${v.previousLicenseFirst}-${v.previousLicenseLast}`
+  },
+
+  {
+    id:"disp_revision", category:C.DISPARO, name:"1. Revisión de Causa",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora")
+    ],
+    build:v=>`*C.T Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Unidad disparada en proceso revisión de causa.`
+  },
+  {
+    id:"disp_generador_vapor", category:C.DISPARO, name:"2. Opera protección del Generador de Vapor",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      mwField("mw","MW al momento del disparo"),
+      { key:"reason", label:"Motivo", type:"grouped-select", placeholder:"Selecciona un motivo", groups:[
+        { label:"1. Protecciones y causas de disparo de caldera", options:[
+          { label:"Falla del sistema APC.", value:"Falla del sistema APC" },
+          { label:"Falla del sistema MBC.", value:"Falla del sistema MBC" },
+          { label:"Falla del sistema B-PROT.", value:"Falla del sistema B-PROT" },
+          { label:"Protección al recalentador.", value:"Protección al recalentador" },
+          { label:"Botón de disparo de caldera de emergencia (PB).", value:"Botón de disparo de caldera de emergencia (PB)" },
+          { label:"Ambos VTF fuera.", value:"Ambos VTF fuera" },
+          { label:"Ambos VTI fuera.", value:"Ambos VTI fuera" },
+          { label:"Nivel del domo de caldera muy bajo: < −380 mm.", value:"Nivel del domo de caldera muy bajo: < −380 mm" },
+          { label:"Nivel del domo de caldera muy alto: > 300 mm.", value:"Nivel del domo de caldera muy alto: > 300 mm" },
+          { label:"Presión del domo de vapor alta —disparo—: > 223 bar.", value:"Presión del domo de vapor alta —disparo—: > 223 bar" },
+          { label:"Presión del hogar alta —disparo—: > 380 mm H₂O.", value:"Presión del hogar alta —disparo—: > 380 mm H₂O" },
+          { label:"Presión del hogar baja —disparo—: < −380 mm H₂O.", value:"Presión del hogar baja —disparo—: < −380 mm H₂O" },
+          { label:"Pérdida total de flama.", value:"Pérdida total de flama" },
+          { label:"Pérdida total de combustible.", value:"Pérdida total de combustible" },
+          { label:"Flujo de aire muy bajo: < 25 % MCR.", value:"Flujo de aire muy bajo: < 25 % MCR" }
+        ]},
+        { label:"2. Protección al recalentador", options:[
+          { label:"Válvula de desviación AP totalmente cerrada: < 3 % —aparece dos veces, posiblemente una señal por cada válvula—.", value:"Válvula de desviación AP totalmente cerrada: < 3 % —aparece dos veces, posiblemente una señal por cada válvula—" },
+          { label:"Vapor recalentado caliente con presión normal: > 28 bar.", value:"Vapor recalentado caliente con presión normal: > 28 bar" },
+          { label:"Vapor bloqueado al recalentador.", value:"Vapor bloqueado al recalentador" },
+          { label:"Flujo de combustible total > 17.2 t/h, equivalente al 20 % MCR.", value:"Flujo de combustible total > 17.2 t/h, equivalente al 20 % MCR" },
+          { label:"Flujo de combustible total > 8.6 t/h, equivalente al 10 % MCR.", value:"Flujo de combustible total > 8.6 t/h, equivalente al 10 % MCR" },
+          { label:"Protección al recalentador.", value:"Protección al recalentador" }
+        ]},
+        { label:"3. Condiciones de pérdida total de combustible", options:[
+          { label:"Todas las válvulas de corte a quemadores de aceite diésel cerradas.", value:"Todas las válvulas de corte a quemadores de aceite diésel cerradas" },
+          { label:"Todos los alimentadores de carbón fuera.", value:"Todos los alimentadores de carbón fuera" },
+          { label:"Todos los pilotos fuera.", value:"Todos los pilotos fuera" },
+          { label:"Todas las válvulas de corte a quemadores de aceite combustible cerradas.", value:"Todas las válvulas de corte a quemadores de aceite combustible cerradas" },
+          { label:"Pérdida total de combustible.", value:"Pérdida total de combustible" }
+        ]},
+        { label:"4. Protecciones del sistema de aceite diésel y aceite combustible", options:[
+          { label:"Presión baja en el cabezal de aire de atomización de aceite diésel: < 2.5 bar.", value:"Presión baja en el cabezal de aire de atomización de aceite diésel: < 2.5 bar" },
+          { label:"Presión muy baja de aceite diésel a quemadores: < 3 bar.", value:"Presión muy baja de aceite diésel a quemadores: < 3 bar" },
+          { label:"Presión muy baja del vapor de atomización de aceite combustible —disparo—: < 5 bar.", value:"Presión muy baja del vapor de atomización de aceite combustible —disparo—: < 5 bar" },
+          { label:"Presión muy baja de aceite combustible a quemadores —disparo—: < 6 bar.", value:"Presión muy baja de aceite combustible a quemadores —disparo—: < 6 bar" },
+          { label:"Presión diferencial de la BCC-A muy baja: < 0.6 bar.", value:"Presión diferencial de la BCC-A muy baja: < 0.6 bar" },
+          { label:"BCC-A parada.", value:"BCC-A parada" },
+          { label:"Presión diferencial de la BCC-B muy baja: < 0.6 bar.", value:"Presión diferencial de la BCC-B muy baja: < 0.6 bar" },
+          { label:"BCC-B parada.", value:"BCC-B parada" },
+          { label:"Presión diferencial de la BCC-C muy baja: < 0.6 bar.", value:"Presión diferencial de la BCC-C muy baja: < 0.6 bar" },
+          { label:"BCC-C parada.", value:"BCC-C parada" },
+          { label:"Válvula de corte de aceite diésel a quemadores cerrada.", value:"Válvula de corte de aceite diésel a quemadores cerrada" },
+          { label:"Suministro de aceite inestable.", value:"Suministro de aceite inestable" },
+          { label:"Válvula de corte de aceite combustible cerrada.", value:"Válvula de corte de aceite combustible cerrada" }
+        ]},
+      ] }
+    ],
+    build:v=>`*C.T Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Disparo de Unidad con ${v.mw} MW, al operar la protección del Generador de vapor
+por ${v.reason}, disparando secuencialmente turbina y Generador eléctrico.`
+  },
+  {
+    id:"disp_generador_electrico", category:C.DISPARO, name:"3. Opera protección del Generador Eléctrico",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      mwField("mw","MW al momento del disparo"),
+      { key:"reason", label:"Motivo", type:"grouped-select", placeholder:"Selecciona un motivo", groups:[
+        { label:"1. Protecciones principales del generador y su conexión a 400 kV", options:[
+          { label:"Respaldo de protección fallas externas en S.E. — 321G", value:"Respaldo de protección fallas externas en S.E. — 321G" },
+          { label:"Interruptor 52A cerrado en línea de 400 kV — A1030 (U-3) / A1040 (U-4)", value:"Interruptor 52A cerrado en línea de 400 kV — A1030 (U-3) / A1040 (U-4)" },
+          { label:"Interruptor 52B cerrado en línea de 400 kV — A8340", value:"Interruptor 52B cerrado en línea de 400 kV — A8340" },
+          { label:"Balance de tensión del generador del cto. de protección — 360G", value:"Balance de tensión del generador del cto. de protección — 360G" },
+          { label:"Pérdida de excitación (D1) — 340G-B", value:"Pérdida de excitación (D1) — 340G-B" },
+          { label:"Pérdida de excitación (AN) — 340G-B", value:"Pérdida de excitación (AN) — 340G-B" },
+          { label:"Pérdida de excitación (D1) — 340G-A", value:"Pérdida de excitación (D1) — 340G-A" },
+          { label:"Pérdida de excitación (AN) — 340G-A", value:"Pérdida de excitación (AN) — 340G-A" },
+          { label:"Falla del interruptor 52A en línea de 400 kV — 950BF-A", value:"Falla del interruptor 52A en línea de 400 kV — 950BF-A" },
+          { label:"Falla del interruptor 52B en línea de 400 kV — 950BF-B", value:"Falla del interruptor 52B en línea de 400 kV — 950BF-B" },
+          { label:"Potencia inversa del generador (D1) — 332G-A", value:"Potencia inversa del generador (D1) — 332G-A" },
+          { label:"Potencia inversa del generador (AN) — 332G-A", value:"Potencia inversa del generador (AN) — 332G-A" },
+          { label:"Falla a tierra del estator (D1) — 364G", value:"Falla a tierra del estator (D1) — 364G" },
+          { label:"Falla a tierra del estator (AN) — 364G", value:"Falla a tierra del estator (AN) — 364G" },
+          { label:"Diferencial de la unidad (generador–transformador) — 387GT", value:"Diferencial de la unidad (generador–transformador) — 387GT" }
+        ]},
+        { label:"2. Protecciones de transformador principal, transformador de excitación y auxiliares", options:[
+          { label:"Buchholz de transformador de excitación — 363TE", value:"Buchholz de transformador de excitación — 363TE" },
+          { label:"Falla a tierra del transformador principal — 951N-TP", value:"Falla a tierra del transformador principal — 951N-TP" },
+          { label:"Buchholz de transformador principal — 963-TP", value:"Buchholz de transformador principal — 963-TP" },
+          { label:"Falla a tierra en el transformador auxiliar 1 — 151N-1-TA1", value:"Falla a tierra en el transformador auxiliar 1 — 151N-1-TA1" },
+          { label:"Falla a tierra en el transformador auxiliar 2 — 151N-1-TA2", value:"Falla a tierra en el transformador auxiliar 2 — 151N-1-TA2" },
+          { label:"Buchholz del transformador auxiliar 1 — 363-TA1", value:"Buchholz del transformador auxiliar 1 — 363-TA1" },
+          { label:"Buchholz del transformador auxiliar 2 — 363-TA2", value:"Buchholz del transformador auxiliar 2 — 363-TA2" },
+          { label:"Alta temperatura gas H₂ — 363GB", value:"Alta temperatura gas H₂ — 363GB" },
+          { label:"Diferencial del transformador auxiliar 1 — 387-TA1", value:"Diferencial del transformador auxiliar 1 — 387-TA1" },
+          { label:"Diferencial del transformador auxiliar 2 — 387-TA2", value:"Diferencial del transformador auxiliar 2 — 387-TA2" },
+          { label:"Sobrecorriente devanado H. del transformador auxiliar 1 — 350/351-TA1", value:"Sobrecorriente devanado H. del transformador auxiliar 1 — 350/351-TA1" },
+          { label:"Sobrecorriente devanado H. del transformador auxiliar 2 — 350/351-TA2", value:"Sobrecorriente devanado H. del transformador auxiliar 2 — 350/351-TA2" },
+          { label:"Muy alta temperatura devanado transformador de excitación — 349TE", value:"Muy alta temperatura devanado transformador de excitación — 349TE" },
+          { label:"Sobrecorriente del transformador de excitación — 350/351TE", value:"Sobrecorriente del transformador de excitación — 350/351TE" },
+          { label:"Muy alta temperatura devanado transformador principal — 949TP", value:"Muy alta temperatura devanado transformador principal — 949TP" }
+        ]},
+        { label:"3. Protecciones de frecuencia", options:[
+          { label:"Alta frecuencia (D1) — 381G E/F", value:"Alta frecuencia (D1) — 381G E/F" },
+          { label:"Alta frecuencia (AN) — 381G E/F", value:"Alta frecuencia (AN) — 381G E/F" },
+          { label:"Alta frecuencia (D1) — 381G-G", value:"Alta frecuencia (D1) — 381G-G" },
+          { label:"Alta frecuencia (AN) — 381G-G", value:"Alta frecuencia (AN) — 381G-G" },
+          { label:"Baja frecuencia (D1) — 381G-A/B", value:"Baja frecuencia (D1) — 381G-A/B" },
+          { label:"Baja frecuencia (AN) — 381G-A/B", value:"Baja frecuencia (AN) — 381G-A/B" },
+          { label:"Baja frecuencia (D1) — 381G-C", value:"Baja frecuencia (D1) — 381G-C" },
+          { label:"Baja frecuencia (AN) — 381G-C", value:"Baja frecuencia (AN) — 381G-C" }
+        ]},
+        { label:"4. Protecciones de excitación y secuencia", options:[
+          { label:"Sobre excitación primer paso — 359TP-A", value:"Sobre excitación primer paso — 359TP-A" },
+          { label:"Sobre excitación segundo paso — 359TP-B", value:"Sobre excitación segundo paso — 359TP-B" },
+          { label:"Fallas sistema de excitación", value:"Fallas sistema de excitación" },
+          { label:"Corriente de secuencia negativa (D1) — 346G", value:"Corriente de secuencia negativa (D1) — 346G" },
+          { label:"Corriente de secuencia negativa (AN) — 346G", value:"Corriente de secuencia negativa (AN) — 346G" },
+          { label:"Disparo automático de generación (D.A.G.)", value:"Disparo automático de generación (D.A.G.)" }
+        ]},
+        { label:"5. Protecciones diferenciales del generador", options:[
+          { label:"Diferencial del generador (D1) — 387G", value:"Diferencial del generador (D1) — 387G" },
+          { label:"Diferencial del generador (AN) — 387G", value:"Diferencial del generador (AN) — 387G" }
+        ]},
+        { label:"6. Otras protecciones del generador", options:[
+          { label:"Potencia inversa del generador (D1) — 332G-B", value:"Potencia inversa del generador (D1) — 332G-B" },
+          { label:"Potencia inversa del generador (AN) — 332G-B", value:"Potencia inversa del generador (AN) — 332G-B" }
+        ]},
+        { label:"7. Energización accidental de generador", options:[
+          { label:"Baja frecuencia — 381G-D", value:"Baja frecuencia — 381G-D" },
+          { label:"Sobrecorriente instantánea — 350G", value:"Sobrecorriente instantánea — 350G" }
+        ]}
+      ] }
+    ],
+    build:v=>`*C.T Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Disparo de Unidad con ${v.mw} MW, al operar la protección del Generador Eléctrico
+por ${v.reason}, disparando secuencialmente Turbina y Generador de vapor.`
+  },
+  {
+    id:"disp_turbina", category:C.DISPARO, name:"4. Opera protección de la Turbina",
+    fields:[
+      { key:"unit", label:"Unidad", type:"select", options:["1","2","3","4","5","6","7"] },
+      timeField("time","Hora"),
+      mwField("mw","MW al momento del disparo"),
+      { key:"reason", label:"Motivo", type:"grouped-select", placeholder:"Selecciona un motivo", groups:[
+        { label:"1. Protecciones / señales principales de turbina", options:[
+          { label:"Todos los int. de alimentación a los buses de 6.9 kV abiertos.", value:"Todos los int. de alimentación a los buses de 6.9 kV abiertos" },
+          { label:"Permisivo (PB) / botón de permisivo de consola.", value:"Permisivo (PB) / botón de permisivo de consola" },
+          { label:"Botón de disparo de turbina de emergencia (PB).", value:"Botón de disparo de turbina de emergencia (PB)" },
+          { label:"Interruptor de máquina cerrado U-3 (1030) o A8340 U-4.", value:"Interruptor de máquina cerrado U-3 (1030) o A8340 U-4" },
+          { label:"Bajo vacío del condensador menor de 500 mm Hg.", value:"Bajo vacío del condensador menor de 500 mm Hg" },
+          { label:"Baja presión de aceite chumaceras de turbina < 0.5 bar.", value:"Baja presión de aceite chumaceras de turbina < 0.5 bar" },
+          { label:"Desgaste de chumacera de empuje > 5.5 bar.", value:"Desgaste de chumacera de empuje > 5.5 bar" },
+          { label:"Falla de suministro de energía EHC.", value:"Falla de suministro de energía EHC" },
+          { label:"Sobrevelocidad de turbina (OSV) o falla del detector de velocidad.", value:"Sobrevelocidad de turbina (OSV) o falla del detector de velocidad" },
+          { label:"Falla sistema del B/T PROT.", value:"Falla sistema del B/T PROT" }
+        ]},
+        { label:"2A. Vibración de chumaceras — muy alto > 0.125 mm", options:[
+          { label:"Vibración de chumacera No. 1 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 1 muy alto > 0.125 mm" },
+          { label:"Vibración de chumacera No. 2 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 2 muy alto > 0.125 mm" },
+          { label:"Vibración de chumacera No. 3 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 3 muy alto > 0.125 mm" },
+          { label:"Vibración de chumacera No. 4 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 4 muy alto > 0.125 mm" },
+          { label:"Vibración de chumacera No. 5 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 5 muy alto > 0.125 mm" },
+          { label:"Vibración de chumacera No. 6 muy alto > 0.125 mm.", value:"Vibración de chumacera No. 6 muy alto > 0.125 mm" }
+        ]},
+        { label:"2B. Vibración de chumaceras — muy alto > 0.25 mm", options:[
+          { label:"Vibración de chumacera No. 1 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 1 muy alto > 0.25 mm" },
+          { label:"Vibración de chumacera No. 2 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 2 muy alto > 0.25 mm" },
+          { label:"Vibración de chumacera No. 3 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 3 muy alto > 0.25 mm" },
+          { label:"Vibración de chumacera No. 4 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 4 muy alto > 0.25 mm" },
+          { label:"Vibración de chumacera No. 5 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 5 muy alto > 0.25 mm" },
+          { label:"Vibración de chumacera No. 6 muy alto > 0.25 mm.", value:"Vibración de chumacera No. 6 muy alto > 0.25 mm" }
+        ]}
+      ] }
+    ],
+    build:v=>`*C.T Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Disparo de Unidad con ${v.mw} MW, al operar la protección de la Turbina
+por ${v.reason}, disparando secuencialmente Generador eléctrico y Generador de vapor.`
+  },
+
+  {
+    id:"paro_autorizacion", category:C.PARO, name:"1. Autorización para dejar la Unidad fuera de línea",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      { key:"mw", label:"Generación actual (MW)", type:"number", placeholder:"Ej. 350" },
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260703", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo por el cual se dejará la Unidad fuera de línea" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Se informa a la G.C.R.CE. la necesidad de dejar la unidad fuera de línea. La G.C.R.CE autoriza el descenso de generación de ${v.mw} MW hasta quedar fuera de línea, otorga la licencia ${v.licenseFirst}-${v.licenseLast} por ${v.reason}
+Con vigencia al ${v.date} a las ${v.validTime} h.`
+  },
+  {
+    id:"paro_descenso_autorizado", category:C.PARO, name:"2. Autorización para descender generación",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      { key:"mwFrom", label:"Generación actual (MW)", type:"number", placeholder:"Ej. 350" },
+      { key:"mwTo", label:"Generación autorizada final (MW)", type:"number", placeholder:"Ej. 175" },
+      { key:"licenseFirst", label:"Licencia — primeros 8 dígitos", type:"text", placeholder:"Ej. 20260703", inputmode:"numeric", maxlength:8, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"licenseLast", label:"Licencia — últimos 4 dígitos", type:"text", placeholder:"Ej. 1234", inputmode:"numeric", maxlength:4, digitsOnly:true, rowGroup:"licenseNumber" },
+      { key:"reason", label:"Motivo", type:"textarea", placeholder:"Escribe el motivo del descenso de generación" },
+      { key:"date", label:"Fecha de vigencia", type:"date", rowGroup:"validity" },
+      { key:"validTime", label:"Hora de vigencia", type:"time", rowGroup:"validity" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*
+
+🟡 *Unidad ${v.unit}*
+
+${v.time} h
+Se informa a la G.C.R.CE. la necesidad de descender generación. La G.C.R.CE autoriza el descenso de generación de ${v.mwFrom} MW hasta ${v.mwTo} MW, otorga la licencia ${v.licenseFirst}-${v.licenseLast} por ${v.reason}
+Con vigencia al ${v.date} a las ${v.validTime} h.`
+  },
+  {
+    id:"paro_inicio_aps", category:C.PARO, name:"3. Inicio de secuencia de paro por APS",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento")
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Inicia secuencia de paro de unidad por APS`
+  },
+  {
+    id:"paro_aux", category:C.PARO, name:"4. Cambio de auxiliares",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      { key:"mw", label:"Generación al cambio de auxiliares (MW)", type:"number", placeholder:"Ej. 20" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h.
+Con ${v.mw} MW se realiza cambio de auxiliares correctamente.`
+  },
+  {
+    id:"paro_fuera_linea", category:C.PARO, name:"5. Unidad fuera de línea",
+    fields:[
+      unitField,
+      timeField("time","Hora del evento"),
+      { key:"mw", label:"Generación al disparo manual (MW)", type:"number", placeholder:"Ej. 5" }
+    ],
+    build:v=>`*C. T. Pdte. Plutarco Elías Calles*
+
+🔴 *Unidad ${v.unit}*
+
+${v.time} h
+Unidad fuera de línea con ${v.mw} MW al disparo manual de turbina, enterada la G.C.R.CE.`
+  },
+
+  {
+    id:"sub_movimiento", category:C.SUB, name:"Apertura o Cierre",
+    fields:[
+      timeField("time","Hora del evento"),
+      {
+        key:"action",
+        label:"Movimiento",
+        type:"select",
+        options:[
+          {value:"open", label:"Apertura"},
+          {value:"close", label:"Cierre"}
+        ]
+      },
+      {
+        key:"equipment",
+        label:"Interruptor o cuchilla",
+        type:"grouped-select",
+        placeholder:"Selecciona el equipo",
+        groups:SUBSTATION_SELECT_GROUPS
+      }
+    ],
+    build:v=>{
+      const equipment = getSubstationEquipment(v.equipment);
+      return `*C.T. Pdte. Plutarco Elías Calles*
+
+*${equipment.header}*
+
+${buildSubstationActionLine(v.time, v.action, v.equipment)}`;
+    }
+  }
+];
+
+const categoryEl = document.getElementById("category");
+const templateEl = document.getElementById("template");
+const templateWrapEl = document.getElementById("templateWrap");
+const templateLabelEl = document.getElementById("templateLabel");
+const arranqueModeWrapEl = document.getElementById("arranqueModeWrap");
+const arranqueModeEl = document.getElementById("arranqueMode");
+const fieldsEl = document.getElementById("fields");
+const previewEl = document.getElementById("preview");
+const statusEl = document.getElementById("status");
+const defaultUnitEl = document.getElementById("defaultUnit");
+const defaultInitialsEl = document.getElementById("defaultInitials");
+
+const prefs = JSON.parse(localStorage.getItem("repcenPrefs") || "{}");
+defaultUnitEl.value = prefs.unit || "3";
+defaultInitialsEl.value = prefs.initials || "";
+
+function currentTime() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function displayDate(iso) {
+  if (!iso) return "";
+  const [y,m,d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+function selectedTemplate() {
+  return templates.find(t => t.id === templateEl.value);
+}
+function setCategories() {
+  categoryEl.innerHTML="";
+  CATEGORY_ORDER.forEach(cat=>{
+    const o=document.createElement("option"); o.value=cat; o.textContent=cat; categoryEl.appendChild(o);
+  });
+}
+function supportsCompoundMode() {
+  return categoryEl.value === C.ARRANQUE || categoryEl.value === C.PARO || categoryEl.value === C.SUB;
+}
+function isCompoundMode() {
+  return supportsCompoundMode() && arranqueModeEl.value === "compound";
+}
+function updateMessageModeUI() {
+  const supportsMode = supportsCompoundMode();
+  arranqueModeWrapEl.hidden = !supportsMode;
+  templateWrapEl.hidden = supportsMode && arranqueModeEl.value === "compound";
+  if (categoryEl.value === C.ARRANQUE) {
+    templateLabelEl.textContent = "Maniobra";
+  } else if (categoryEl.value === C.PARO) {
+    templateLabelEl.textContent = "Evento";
+  } else if (categoryEl.value === C.SUB) {
+    templateLabelEl.textContent = "Maniobra";
+  } else {
+    templateLabelEl.textContent = "Tipo de mensaje";
+  }
+}
+function setTemplates() {
+  const prev = templateEl.value;
+  templateEl.innerHTML="";
+  templates.filter(t=>t.category===categoryEl.value).forEach(t=>{
+    const o=document.createElement("option"); o.value=t.id; o.textContent=t.name; templateEl.appendChild(o);
+  });
+  if ([...templateEl.options].some(o=>o.value===prev)) templateEl.value=prev;
+  updateMessageModeUI();
+  renderFields();
+}
+function createField(f) {
+  const wrap = document.createElement("div");
+  wrap.className="field";
+  const label=document.createElement("label");
+  label.htmlFor="f_"+f.key; label.textContent=f.label;
+  wrap.appendChild(label);
+
+  let input;
+  if (f.type==="select") {
+    input=document.createElement("select");
+    (f.options||[]).forEach(opt=>{
+      const o=document.createElement("option");
+      if (typeof opt === "object") {
+        o.value=opt.value; o.textContent=opt.label;
+      } else {
+        o.value=opt; o.textContent=opt;
+      }
+      input.appendChild(o);
+    });
+  } else if (f.type==="grouped-select") {
+    input=document.createElement("select");
+    if (f.placeholder) {
+      const p=document.createElement("option");
+      p.value=""; p.textContent=f.placeholder; p.disabled=true; p.selected=true;
+      input.appendChild(p);
+    }
+    (f.groups||[]).forEach(group=>{
+      const g=document.createElement("optgroup");
+      g.label=group.label;
+      (group.options||[]).forEach(opt=>{
+        const o=document.createElement("option");
+        if (typeof opt === "object") {
+          o.value=opt.value; o.textContent=opt.label;
+        } else {
+          o.value=opt; o.textContent=opt;
+        }
+        g.appendChild(o);
+      });
+      input.appendChild(g);
+    });
+  } else if (f.type==="textarea") {
+    input=document.createElement("textarea");
+    input.rows=3;
+  } else {
+    input=document.createElement("input");
+    input.type=f.type || "text";
+  }
+  input.id="f_"+f.key;
+  input.dataset.key=f.key;
+  if (f.placeholder) input.placeholder=f.placeholder;
+  if (f.value) input.value=f.value;
+  if (f.inputmode) input.inputMode=f.inputmode;
+  if (f.maxlength) input.maxLength=f.maxlength;
+  if (f.defaultFromPrefs) input.value=defaultUnitEl.value;
+  if (f.now) input.value=currentTime();
+  if (f.type==="date") input.value=todayISO();
+  if (f.digitsOnly) {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "").slice(0, f.maxlength || undefined);
+    });
+  }
+  input.addEventListener("input", generate);
+  input.addEventListener("change", generate);
+  wrap.appendChild(input);
+  return wrap;
+}
+function createCompoundField(f, templateId) {
+  const wrap = document.createElement("div");
+  wrap.className = "field";
+  const label = document.createElement("label");
+  const id = `cf_${templateId}_${f.key}`;
+  label.htmlFor = id;
+  label.textContent = f.label;
+  wrap.appendChild(label);
+
+  let input;
+  if (f.type === "select") {
+    input = document.createElement("select");
+    (f.options || []).forEach(opt => {
+      const o = document.createElement("option");
+      if (typeof opt === "object") {
+        o.value = opt.value; o.textContent = opt.label;
+      } else {
+        o.value = opt; o.textContent = opt;
+      }
+      input.appendChild(o);
+    });
+  } else if (f.type === "grouped-select") {
+    input = document.createElement("select");
+    if (f.placeholder) {
+      const p = document.createElement("option");
+      p.value = ""; p.textContent = f.placeholder; p.disabled = true; p.selected = true;
+      input.appendChild(p);
+    }
+    (f.groups || []).forEach(group => {
+      const g = document.createElement("optgroup");
+      g.label = group.label;
+      (group.options || []).forEach(opt => {
+        const o = document.createElement("option");
+        if (typeof opt === "object") {
+          o.value = opt.value; o.textContent = opt.label;
+        } else {
+          o.value = opt; o.textContent = opt;
+        }
+        g.appendChild(o);
+      });
+      input.appendChild(g);
+    });
+  } else if (f.type === "textarea") {
+    input = document.createElement("textarea");
+    input.rows = 3;
+  } else {
+    input = document.createElement("input");
+    input.type = f.type || "text";
+  }
+
+  input.id = id;
+  input.dataset.compTemplate = templateId;
+  input.dataset.compKey = f.key;
+  if (f.placeholder) input.placeholder = f.placeholder;
+  if (f.value) input.value = f.value;
+  if (f.inputmode) input.inputMode = f.inputmode;
+  if (f.maxlength) input.maxLength = f.maxlength;
+  if (f.now) input.value = currentTime();
+  if (f.type === "date") input.value = todayISO();
+  if (f.digitsOnly) {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/\D/g, "").slice(0, f.maxlength || undefined);
+    });
+  }
+  input.addEventListener("input", generateCompound);
+  input.addEventListener("change", generateCompound);
+  wrap.appendChild(input);
+  return wrap;
+}
+function renderCompoundFieldsForTemplate(container, t) {
+  const eventFields = t.fields.filter(f => f.key !== "unit");
+  for (let i = 0; i < eventFields.length; i++) {
+    const f = eventFields[i];
+    const next = eventFields[i + 1];
+    if (f.rowGroup && next && next.rowGroup === f.rowGroup) {
+      const row = document.createElement("div");
+      row.className = "inline-pair";
+      row.appendChild(createCompoundField(f, t.id));
+      row.appendChild(createCompoundField(next, t.id));
+      container.appendChild(row);
+      i++;
+    } else {
+      container.appendChild(createCompoundField(f, t.id));
+    }
+  }
+}
+
+function createSubstationCompoundControl(equipment) {
+  const item = document.createElement("div");
+  item.className = "check-item";
+  item.dataset.subEquipment = equipment.value;
+
+  const head = document.createElement("label");
+  head.className = "check-head";
+
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.className = "substation-compound-check";
+  check.dataset.equipment = equipment.value;
+
+  const title = document.createElement("span");
+  title.textContent = equipment.description
+    ? `${equipment.code} — ${equipment.description}`
+    : equipment.code;
+
+  head.appendChild(check);
+  head.appendChild(title);
+
+  const detail = document.createElement("div");
+  detail.className = "check-fields";
+
+  const row = document.createElement("div");
+  row.className = "inline-pair";
+
+  const timeWrap = document.createElement("div");
+  timeWrap.className = "field";
+  const timeLabel = document.createElement("label");
+  const timeId = `sub_time_${equipment.code}`;
+  timeLabel.htmlFor = timeId;
+  timeLabel.textContent = "Hora del evento";
+  const timeInput = document.createElement("input");
+  timeInput.type = "time";
+  timeInput.id = timeId;
+  timeInput.value = currentTime();
+  timeInput.dataset.subTime = equipment.value;
+  timeInput.addEventListener("input", generateSubstationCompound);
+  timeInput.addEventListener("change", generateSubstationCompound);
+  timeWrap.appendChild(timeLabel);
+  timeWrap.appendChild(timeInput);
+
+  const actionWrap = document.createElement("div");
+  actionWrap.className = "field";
+  const actionLabel = document.createElement("label");
+  const actionId = `sub_action_${equipment.code}`;
+  actionLabel.htmlFor = actionId;
+  actionLabel.textContent = "Movimiento";
+  const actionSelect = document.createElement("select");
+  actionSelect.id = actionId;
+  actionSelect.dataset.subAction = equipment.value;
+  [
+    {value:"open", label:"Apertura"},
+    {value:"close", label:"Cierre"}
+  ].forEach(option => {
+    const el = document.createElement("option");
+    el.value = option.value;
+    el.textContent = option.label;
+    actionSelect.appendChild(el);
+  });
+  actionSelect.addEventListener("input", generateSubstationCompound);
+  actionSelect.addEventListener("change", generateSubstationCompound);
+  actionWrap.appendChild(actionLabel);
+  actionWrap.appendChild(actionSelect);
+
+  row.appendChild(timeWrap);
+  row.appendChild(actionWrap);
+  detail.appendChild(row);
+
+  check.addEventListener("change", () => {
+    item.classList.toggle("selected", check.checked);
+    if (check.checked) timeInput.value = currentTime();
+    generateSubstationCompound();
+  });
+
+  item.appendChild(head);
+  item.appendChild(detail);
+  return item;
+}
+
+function renderSubstationCompound() {
+  fieldsEl.innerHTML = "";
+
+  const intro = document.createElement("p");
+  intro.className = "checklist-intro";
+  intro.textContent = "Marca los interruptores o cuchillas que deseas incluir. Cada equipo solicitará su hora y si la maniobra es de apertura o cierre. El mensaje se ordenará automáticamente de la hora más temprana a la más reciente.";
+  fieldsEl.appendChild(intro);
+
+  SUBSTATION_EQUIPMENT_GROUPS.forEach(group => {
+    const scopeTitle = document.createElement("h3");
+    scopeTitle.className = "compound-group-title";
+    scopeTitle.textContent = group.scopeLabel;
+    fieldsEl.appendChild(scopeTitle);
+
+    group.sections.forEach(section => {
+      const sectionTitle = document.createElement("p");
+      sectionTitle.className = "compound-section-title";
+      sectionTitle.textContent = section.label;
+      fieldsEl.appendChild(sectionTitle);
+
+      section.options.forEach(option => {
+        const equipment = getSubstationEquipment(`${group.scope}|${section.type}|${option.code}`);
+        fieldsEl.appendChild(createSubstationCompoundControl(equipment));
+      });
+    });
+  });
+
+  generateSubstationCompound();
+}
+
+function generateSubstationCompound() {
+  if (!(categoryEl.value === C.SUB && isCompoundMode())) return;
+
+  const selected = [];
+  SUBSTATION_EQUIPMENT_LIST.forEach(equipment => {
+    const check = document.querySelector(`.substation-compound-check[data-equipment="${equipment.value}"]`);
+    if (!check || !check.checked) return;
+
+    const timeInput = document.querySelector(`[data-sub-time="${equipment.value}"]`);
+    const actionSelect = document.querySelector(`[data-sub-action="${equipment.value}"]`);
+    selected.push({
+      equipment,
+      time:timeInput ? timeInput.value : "",
+      action:actionSelect ? actionSelect.value : "open"
+    });
+  });
+
+  selected.sort((a, b) => {
+    const timeA = a.time || "99:99";
+    const timeB = b.time || "99:99";
+    return timeA.localeCompare(timeB);
+  });
+
+  const headerText = substationSharedHeader(selected.map(item => item.equipment.scope));
+  const header = `*C.T. Pdte. Plutarco Elías Calles*
+
+*${headerText}*`;
+
+  const bodies = selected.map(item =>
+    buildSubstationActionLine(item.time, item.action, item.equipment.value)
+  );
+
+  previewEl.value = bodies.length ? `${header}
+
+${bodies.join("\n\n")}` : header;
+  statusEl.textContent = "";
+}
+
+
+function renderCompoundMode() {
+  if (categoryEl.value === C.SUB) {
+    renderSubstationCompound();
+    return;
+  }
+
+  fieldsEl.innerHTML = "";
+
+  const unitWrap = document.createElement("div");
+  unitWrap.className = "compound-unit";
+  unitWrap.appendChild(createField(unitField));
+  fieldsEl.appendChild(unitWrap);
+
+  const intro = document.createElement("p");
+  intro.className = "checklist-intro";
+  if (categoryEl.value === C.ARRANQUE) {
+    intro.textContent = "Marca las maniobras que deseas incluir. Al seleccionar una, aparecerán su hora y los datos adicionales. El mensaje se ordenará automáticamente de la hora más temprana a la más reciente.";
+  } else if (categoryEl.value === C.SUB) {
+    intro.textContent = "Marca las maniobras de subestación que deseas incluir. Al seleccionar una, aparecerán su hora y los datos adicionales que correspondan.";
+  } else {
+    intro.textContent = "Marca los eventos que deseas incluir. Al seleccionar uno, aparecerán su hora y los datos adicionales. El mensaje se ordenará automáticamente de la hora más temprana a la más reciente.";
+  }
+  fieldsEl.appendChild(intro);
+
+  templates.filter(t => t.category === categoryEl.value).forEach(t => {
+    const item = document.createElement("div");
+    item.className = "check-item";
+    item.dataset.templateId = t.id;
+
+    const head = document.createElement("label");
+    head.className = "check-head";
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.className = "compound-check";
+    check.dataset.templateId = t.id;
+    const title = document.createElement("span");
+    title.textContent = t.name;
+    head.appendChild(check);
+    head.appendChild(title);
+
+    const detail = document.createElement("div");
+    detail.className = "check-fields";
+    renderCompoundFieldsForTemplate(detail, t);
+
+    check.addEventListener("change", () => {
+      item.classList.toggle("selected", check.checked);
+      if (check.checked) {
+        item.querySelectorAll('input[type="time"]').forEach(input => {
+          input.value = currentTime();
+        });
+      }
+      generateCompound();
+    });
+
+    item.appendChild(head);
+    item.appendChild(detail);
+    fieldsEl.appendChild(item);
+  });
+
+  generateCompound();
+}
+function compoundValues(t) {
+  const v = { unit: (document.getElementById("f_unit") || {}).value || defaultUnitEl.value };
+  document.querySelectorAll(`[data-comp-template="${t.id}"]`).forEach(el => {
+    v[el.dataset.compKey] = el.type === "date" ? displayDate(el.value) : el.value.trim();
+  });
+  return v;
+}
+function compoundSortTime(values) {
+  const candidates = [
+    values.time,
+    values.start,
+    values.licenseTime,
+    values.retroTime,
+    values.end
+  ];
+  const found = candidates.find(value => /^\d{2}:\d{2}$/.test(value || ""));
+  return found || "99:99";
+}
+
+function stripSharedHeader(message, category) {
+  if (category === C.ARRANQUE) {
+    return message.replace(/^\*C\.T\. Pdte\. Plutarco Elías Calles\*\n\n\*⚙️ Unidad .*?\*\n\n/, "");
+  }
+  if (category === C.PARO) {
+    return message.replace(/^\*C\. T\. Pdte\. Plutarco Elías Calles\*\n\n(?:🔴|🟡) \*Unidad .*?\*\n\n/, "");
+  }
+  if (category === C.SUB) {
+    return message
+      .replace(/^\*Subestación de 400 kV\*\n\n/, "")
+      .replace(/^\*C\.T\. Pdte\. Plutarco Elías Calles\*\n\*Unidad .*?\*\n\n/, "");
+  }
+  return message;
+}
+function generateCompound() {
+  if (!isCompoundMode()) return;
+  if (categoryEl.value === C.SUB) {
+    generateSubstationCompound();
+    return;
+  }
+  const category = categoryEl.value;
+  const unit = (document.getElementById("f_unit") || {}).value || defaultUnitEl.value;
+  const selectedItems = [];
+  const selectedIds = [];
+
+  templates.filter(t => t.category === category).forEach((t, originalIndex) => {
+    const check = document.querySelector(`.compound-check[data-template-id="${t.id}"]`);
+    if (check && check.checked) {
+      const values = compoundValues(t);
+      selectedIds.push(t.id);
+      selectedItems.push({
+        id:t.id,
+        body:stripSharedHeader(t.build(values), category),
+        sortTime:compoundSortTime(values),
+        originalIndex
+      });
+    }
+  });
+
+  selectedItems.sort((a, b) => {
+    const timeComparison = a.sortTime.localeCompare(b.sortTime);
+    return timeComparison !== 0 ? timeComparison : a.originalIndex - b.originalIndex;
+  });
+
+  const bodies = selectedItems.map(item => item.body);
+
+  let header;
+  if (category === C.ARRANQUE) {
+    header = `*C.T. Pdte. Plutarco Elías Calles*\n\n*⚙️ Unidad ${unit}*`;
+  } else if (category === C.PARO) {
+    const onlyYellow = selectedIds.length > 0 && selectedIds.every(id => id === "paro_descenso_autorizado");
+    const indicator = onlyYellow ? "🟡" : "🔴";
+    header = `*C. T. Pdte. Plutarco Elías Calles*\n\n${indicator} *Unidad ${unit}*`;
+  } else {
+    header = `*C.T. Pdte. Plutarco Elías Calles*\n\n*Unidad ${unit}*\n\n*Subestación de 400 kV*`;
+  }
+
+  previewEl.value = bodies.length ? `${header}\n\n${bodies.join("\n\n")}` : header;
+  statusEl.textContent = "";
+}
+function renderFields() {
+  if (isCompoundMode()) {
+    renderCompoundMode();
+    return;
+  }
+  fieldsEl.innerHTML="";
+  const t=selectedTemplate();
+  if (!t) {
+    previewEl.value="";
+    return;
+  }
+
+  for (let i = 0; i < t.fields.length; i++) {
+    const f = t.fields[i];
+    const next = t.fields[i + 1];
+
+    if (f.rowGroup && next && next.rowGroup === f.rowGroup) {
+      const row = document.createElement("div");
+      row.className = "inline-pair";
+      row.appendChild(createField(f));
+      row.appendChild(createField(next));
+      fieldsEl.appendChild(row);
+      i++;
+    } else {
+      fieldsEl.appendChild(createField(f));
+    }
+  }
+
+  generate();
+}
+function values() {
+  const v={};
+  document.querySelectorAll("#fields [data-key]").forEach(el=>{
+    v[el.dataset.key] = el.type==="date" ? displayDate(el.value) : el.value.trim();
+  });
+  return v;
+}
+function generate() {
+  if (isCompoundMode()) {
+    generateCompound();
+    return;
+  }
+  const t=selectedTemplate();
+  if (!t) return;
+  previewEl.value=t.build(values());
+  statusEl.textContent="";
+}
+async function copyText() {
+  try {
+    await navigator.clipboard.writeText(previewEl.value);
+    statusEl.textContent="Mensaje copiado.";
+  } catch(e) {
+    previewEl.select();
+    document.execCommand("copy");
+    statusEl.textContent="Mensaje copiado.";
+  }
+  setTimeout(()=>statusEl.textContent="",1800);
+}
+async function shareText() {
+  if (navigator.share) {
+    try {
+      await navigator.share({text:previewEl.value});
+      statusEl.textContent="Mensaje compartido.";
+    } catch(e) {}
+  } else {
+    copyText();
+    statusEl.textContent="Copiado. Abre WhatsApp y pega el mensaje.";
+  }
+}
+function openWhatsapp() {
+  const text=encodeURIComponent(previewEl.value);
+  window.location.href=`whatsapp://send?text=${text}`;
+  setTimeout(()=>{
+    if (!document.hidden) window.open(`https://wa.me/?text=${text}`,"_blank");
+  },700);
+}
+
+categoryEl.addEventListener("change", setTemplates);
+arranqueModeEl.addEventListener("change", () => {
+  updateMessageModeUI();
+  renderFields();
+});
+templateEl.addEventListener("change", renderFields);
+document.getElementById("copyBtn").addEventListener("click", copyText);
+document.getElementById("shareBtn").addEventListener("click", shareText);
+document.getElementById("whatsappBtn").addEventListener("click", openWhatsapp);
+document.getElementById("savePrefs").addEventListener("click", ()=>{
+  localStorage.setItem("repcenPrefs", JSON.stringify({unit:defaultUnitEl.value, initials:defaultInitialsEl.value}));
+  const unitInput=document.getElementById("f_unit");
+  if (unitInput) unitInput.value=defaultUnitEl.value;
+  generate();
+  statusEl.textContent="Preferencias guardadas.";
+  setTimeout(()=>statusEl.textContent="",1800);
+});
+
+setCategories();
+categoryEl.value=C.MOV;
+setTemplates();
+</script>
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
